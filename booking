@@ -13,178 +13,105 @@
 <body>
     <div id="root"></div>
     <script type="text/babel">
-const { useState } = React;
+        const { useState } = React;
         
-        const ChevronRight = () => (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-        );
-        
-        const Check = ({ size = 24 }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-        );
-        
-        const Tag = () => (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                <line x1="7" y1="7" x2="7.01" y2="7"></line>
-            </svg>
-        );
-
         function TravelPackageSelector() {
             const [step, setStep] = useState('welcome');
             const [selectedPackage, setSelectedPackage] = useState(null);
-            const [agreedToTerms, setAgreedToTerms] = useState(false);
             const [numTravelers, setNumTravelers] = useState(2);
             const [numDays, setNumDays] = useState(10);
             const [discountCode, setDiscountCode] = useState('');
             const [appliedDiscount, setAppliedDiscount] = useState(0);
-            const [discountError, setDiscountError] = useState('');
             const [showBookingDetails, setShowBookingDetails] = useState(false);
             const [confirmedEmail, setConfirmedEmail] = useState(false);
             const [clientInfo, setClientInfo] = useState({ firstName: '', lastName: '', email: '' });
 
             const packages = {
-                hotelOnly: {
-                    name: "Hotel Only", price: 200, priceDisplay: "$200",
-                    priceDetail: "(refunded if hotel is booked within 30 days)",
-                    description: "Perfect if you just need help finding and booking the ideal hotel",
-                    features: ["Personalized hotel recommendations", "Booking assistance", "Service fee refundable if booked within 30 days"]
-                },
-                signatureJourney: {
-                    name: "The Signature Journey", basePrice: 600,
-                    description: "Our most comprehensive planning experience, designed for travelers who want every detail handled with care",
-                    features: ["Complete trip planning from start to finish", "Every detail meticulously arranged", "Personalized itinerary design", "All bookings and reservations handled", "24/7 travel support", "Exclusive experiences and VIP access"]
-                },
-                curatedEscape: {
-                    name: "The Curated Escape", basePrice: 500,
-                    description: "A personalized planning experience for travelers who want expert support and thoughtfully designed details—but still like to have a hand in the planning",
-                    features: ["Collaborative planning approach", "Expert recommendations and guidance", "Thoughtfully designed itinerary", "Key bookings and reservations", "Flexibility to customize details", "Travel support throughout"]
-                },
-                groupTrips: {
-                    name: "Group Trips", price: 250, priceDisplay: "$250 deposit", priceDetail: "Rest TBD based on group size",
-                    description: "When you have a large group to coordinate, this service provides competitive rates that you can not get on your own, along with lots of perks",
-                    features: ["Competitive group rates", "Exclusive group perks and upgrades", "Simplified coordination for large parties", "Bulk booking advantages", "Dedicated group support", "Custom pricing based on group needs"]
-                }
-            };Here's PART 3 (FINAL PART) - paste this after Part 2:
-javascript            const questions = [
-                { id: 'needHelp', question: "What do you need help with?", options: [
-                    { value: 'hotelOnly', label: 'Just finding a hotel', next: 'hotelOnly' },
-                    { value: 'fullTrip', label: 'Full trip planning', next: 'tripType' }
-                ]},
-                { id: 'tripType', question: "What type of trip are you planning?", options: [
-                    { value: 'signature', label: 'I want every detail handled with care', packageName: 'The Signature Journey', next: 'signatureJourney' },
-                    { value: 'curated', label: 'I want expert support but like to have a hand in planning', packageName: 'The Curated Escape', next: 'curatedEscape' },
-                    { value: 'group', label: 'Large group trip coordination', packageName: 'Group Trips', next: 'groupTrips' }
-                ]}
-            ];
-
-            const calculatePrice = (packageKey, travelers, days) => {
-                if (packageKey === 'signatureJourney') return 600 + Math.max(0, travelers - 2) * 100 + Math.max(0, days - 10) * 100;
-                if (packageKey === 'curatedEscape') return 500 + Math.max(0, travelers - 2) * 50 + Math.max(0, days - 10) * 100;
-                return packages[packageKey]?.price || 0;
+                hotelOnly: { name: "Hotel Only", price: 200, priceDisplay: "$200", priceDetail: "(refunded if hotel is booked within 30 days)", description: "Perfect if you just need help finding and booking the ideal hotel", features: ["Personalized hotel recommendations", "Booking assistance", "Service fee refundable if booked within 30 days"] },
+                signatureJourney: { name: "The Signature Journey", basePrice: 600, description: "Our most comprehensive planning experience", features: ["Complete trip planning", "Every detail arranged", "24/7 support"] },
+                curatedEscape: { name: "The Curated Escape", basePrice: 500, description: "Personalized planning with your input", features: ["Collaborative planning", "Expert guidance", "Flexibility to customize"] },
+                groupTrips: { name: "Group Trips", price: 250, priceDisplay: "$250 deposit", priceDetail: "Rest TBD", description: "Competitive group rates", features: ["Group rates", "Exclusive perks", "Dedicated support"] }
             };
 
-            const applyDiscount = (price) => {
-                if (appliedDiscount === 50) return Math.round(price * 0.5);
-                if (appliedDiscount === 100) return 0;
-                return price;
+            const calculatePrice = (pkg, travelers, days) => {
+                if (pkg === 'signatureJourney') return 600 + Math.max(0, travelers - 2) * 100 + Math.max(0, days - 10) * 100;
+                if (pkg === 'curatedEscape') return 500 + Math.max(0, travelers - 2) * 50 + Math.max(0, days - 10) * 100;
+                return packages[pkg]?.price || 0;
             };
 
             const getPriceDisplay = (withDiscount = true) => {
-                let basePrice = 0;
-                if (selectedPackage === 'signatureJourney' || selectedPackage === 'curatedEscape') {
-                    basePrice = calculatePrice(selectedPackage, numTravelers, numDays);
-                } else if (selectedPackage === 'hotelOnly') {
-                    return withDiscount && appliedDiscount > 0 ? '$' + applyDiscount(200) : '$200';
-                } else if (selectedPackage === 'groupTrips') {
-                    return '$250 deposit';
-                }
-                return withDiscount ? '$' + applyDiscount(basePrice) : '$' + basePrice;
+                let price = calculatePrice(selectedPackage, numTravelers, numDays);
+                if (selectedPackage === 'hotelOnly') price = 200;
+                if (selectedPackage === 'groupTrips') return '$250 deposit';
+                if (withDiscount && appliedDiscount > 0) price = appliedDiscount === 50 ? Math.round(price * 0.5) : 0;
+                return '$' + price;
             };
 
-            const handleApplyDiscount = () => {
-                const code = discountCode.toLowerCase().trim();
-                if (code === 'travel50') { setAppliedDiscount(50); setDiscountError(''); }
-                else if (code === 'travel100') { setAppliedDiscount(100); setDiscountError(''); }
-                else if (code === '') { setDiscountError(''); setAppliedDiscount(0); }
-                else { setDiscountError('Invalid discount code'); setAppliedDiscount(0); }
-            };
-
-            const handleAnswer = (questionId, answer) => {
-                const question = questions.find(q => q.id === questionId);
-                const selected = question.options.find(opt => opt.value === answer);
-                if (selected.next in packages) {
-                    setSelectedPackage(selected.next);
-                    if (selected.next === 'signatureJourney' || selected.next === 'curatedEscape') setStep('numTravelers');
-                    else setStep('package');
-                } else setStep(selected.next);
-            };
-
-            const getBookingDetailsText = () => {
-                const pkg = packages[selectedPackage];
-                let text = 'NEW BOOKING\\n\\nClient: ' + clientInfo.firstName + ' ' + clientInfo.lastName + '\\nEmail: ' + clientInfo.email + '\\n\\nPackage: ' + pkg.name + '\\nPrice: ' + getPriceDisplay(true);
-                if (appliedDiscount > 0) text += '\\nDiscount: ' + appliedDiscount + '% (' + discountCode.toUpperCase() + ')';
-                if (selectedPackage === 'signatureJourney' || selectedPackage === 'curatedEscape') text += '\\nTravelers: ' + numTravelers + ' | Days: ' + numDays;
-                text += '\\n\\nFeatures:\\n' + pkg.features.map(f => '- ' + f).join('\\n');
-                text += '\\n\\nAgreed: ' + new Date().toLocaleDateString() + '\\nPayment: Venmo @betsy-prieto or PayPal betsymariephoto@gmail.com\\n\\nForm: https://traveljoy.com/webforms/bZVyw6QqTt6J4vAiSHHXTfEg/forms/TPUBHszwEQuZkeomHrUF6mXf/link\\n\\nMerci, Betsy\\nbetsy.prieto@fora.travel';
-                return text;
-            };
-
-            const sendEmailJS = () => {
+            const sendEmail = () => {
                 const pkg = packages[selectedPackage];
                 emailjs.send('service_3am7ego', 'template_et41uug', {
                     client_name: clientInfo.firstName + ' ' + clientInfo.lastName,
                     client_email: clientInfo.email,
                     package_name: pkg.name,
                     price: getPriceDisplay(true),
-                    discount_info: appliedDiscount > 0 ? appliedDiscount + '% off (' + discountCode.toUpperCase() + ')' : '',
+                    discount_info: appliedDiscount > 0 ? appliedDiscount + '% off' : '',
                     trip_details: (selectedPackage === 'signatureJourney' || selectedPackage === 'curatedEscape') ? numTravelers + ' travelers, ' + numDays + ' days' : '',
                     features: pkg.features.join(', '),
                     date: new Date().toLocaleDateString(),
-                    payment_method: 'Venmo @betsy-prieto or PayPal betsymariephoto@gmail.com',
+                    payment_method: 'Venmo @betsy-prieto or PayPal',
                     form_link: 'https://traveljoy.com/webforms/bZVyw6QqTt6J4vAiSHHXTfEg/forms/TPUBHszwEQuZkeomHrUF6mXf/link'
                 });
             };
 
-            const handlePayment = (method) => {
-                if (!showBookingDetails) { setShowBookingDetails(true); sendEmailJS(); return; }
-                if (!confirmedEmail) return;
-                if (method === 'venmo') window.open('https://venmo.com/betsy-prieto', '_blank');
-                else if (method === 'paypal') {
-                    const amount = applyDiscount(calculatePrice(selectedPackage, numTravelers, numDays));
-                    if (amount > 0) window.open('https://www.paypal.com/paypalme/betsymariephoto/' + amount + 'USD', '_blank');
-                }
-            };
-
             return (
-<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
+                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
                     <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
                         <div className="text-center mb-8">
                             <h1 className="text-5xl font-bold mb-2" style={{color: '#1e40af'}}>La Vie Est Belle</h1>
                             <p className="text-2xl mb-3" style={{color: '#2563eb', letterSpacing: '0.3em'}}>TRAVEL</p>
-                            <div className="relative mx-auto" style={{width: '200px', height: '30px'}}>
-                                <div style={{position: 'absolute', bottom: '10px', left: '0', right: '0', height: '3px', background: 'linear-gradient(to right, #d946ef, #c026d3)', borderRadius: '50px'}}></div>
-                                <svg style={{position: 'absolute', right: '-10px', top: '-5px', width: '40px', height: '40px'}} viewBox="0 0 24 24" fill="none">
-                                    <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" fill="#d946ef"/>
-                                </svg>
-                            </div>
                         </div>
                         
                         {step === 'welcome' && (
                             <div className="space-y-4 max-w-md mx-auto">
-                                <p className="text-xl text-center mb-4">Let's find the perfect travel package for you</p>
+                                <p className="text-xl text-center mb-4">Let's find your perfect package</p>
                                 <input type="text" placeholder="First Name *" value={clientInfo.firstName} onChange={(e) => setClientInfo({...clientInfo, firstName: e.target.value})} className="w-full px-4 py-2 border rounded-lg"/>
                                 <input type="text" placeholder="Last Name *" value={clientInfo.lastName} onChange={(e) => setClientInfo({...clientInfo, lastName: e.target.value})} className="w-full px-4 py-2 border rounded-lg"/>
                                 <input type="email" placeholder="Email *" value={clientInfo.email} onChange={(e) => setClientInfo({...clientInfo, email: e.target.value})} className="w-full px-4 py-2 border rounded-lg"/>
-                                <button onClick={() => clientInfo.firstName && clientInfo.lastName && clientInfo.email && setStep('needHelp')} disabled={!clientInfo.firstName || !clientInfo.lastName || !clientInfo.email} className="w-full bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300">Get Started</button>
+                                <button onClick={() => clientInfo.firstName && clientInfo.lastName && clientInfo.email && setStep('select')} disabled={!clientInfo.firstName || !clientInfo.lastName || !clientInfo.email} className="w-full bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300">Get Started</button>
+                            </div>
+                        )}
+
+                        {step === 'select' && (
+                            <div>
+                                <h2 className="text-2xl font-bold mb-6">Choose Your Package</h2>
+                                {Object.keys(packages).map(key => (
+                                    <button key={key} onClick={() => { setSelectedPackage(key); sendEmail(); setShowBookingDetails(true); setStep('payment'); }} className="w-full bg-white border-2 border-blue-200 p-6 rounded-lg mb-4 text-left hover:border-blue-600">
+                                        <div className="font-bold text-lg text-blue-600">{packages[key].name}</div>
+                                        <div className="text-gray-600">{packages[key].description}</div>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        {step === 'payment' && showBookingDetails && (
+                            <div className="space-y-4">
+                                <h2 className="text-2xl font-bold">Booking Details</h2>
+                                <div className="bg-yellow-50 border-2 border-yellow-400 p-4 rounded-lg">
+                                    <p className="font-bold mb-2">Copy and email to: betsy.prieto@fora.travel</p>
+                                    <textarea readOnly value={'Booking: ' + clientInfo.firstName + ' ' + clientInfo.lastName + ' | ' + clientInfo.email + ' | Package: ' + packages[selectedPackage].name + ' | Price: ' + getPriceDisplay()} className="w-full h-32 p-3 border rounded text-sm" onClick={(e) => e.target.select()}/>
+                                    <label className="flex items-center gap-2 mt-3">
+                                        <input type="checkbox" checked={confirmedEmail} onChange={(e) => setConfirmedEmail(e.target.checked)} className="w-5 h-5"/>
+                                        <span className="font-semibold">I will email the booking details</span>
+                                    </label>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button onClick={() => confirmedEmail && window.open('https://venmo.com/betsy-prieto', '_blank')} disabled={!confirmedEmail} className="bg-blue-600 text-white px-6 py-4 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300">Pay with Venmo</button>
+                                    <button onClick={() => confirmedEmail && window.open('https://www.paypal.com/paypalme/betsymariephoto', '_blank')} disabled={!confirmedEmail} className="bg-blue-600 text-white px-6 py-4 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300" style={{backgroundColor: confirmedEmail ? '#0070ba' : '#d1d5db'}}>Pay with PayPal</button>
+                                </div>
                             </div>
                         )}
                         
-                        <p className="text-center mt-8 text-sm text-gray-500">La Vie Est Belle Travel | betsy.prieto@fora.travel</p>
+                        <p className="text-center mt-8 text-sm text-gray-500">betsy.prieto@fora.travel</p>
                     </div>
                 </div>
             );
